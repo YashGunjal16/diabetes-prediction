@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Diabetes Prediction Form</h1>
+    <form id="predictionForm">
+        <label for="pregnancies">Pregnancies:</label>
+        <input type="number" id="pregnancies" name="pregnancies" required><br>
+        
+        <label for="glucose">Glucose:</label>
+        <input type="number" id="glucose" name="glucose" required><br>
+
+        <label for="blood_pressure">Blood Pressure:</label>
+        <input type="number" id="blood_pressure" name="blood_pressure" required><br>
+
+        <label for="skin_thickness">Skin Thickness:</label>
+        <input type="number" id="skin_thickness" name="skin_thickness" required><br>
+
+        <label for="insulin">Insulin:</label>
+        <input type="number" id="insulin" name="insulin" required><br>
+
+        <label for="bmi">BMI:</label>
+        <input type="number" id="bmi" name="bmi" step="0.1" required><br>
+
+        <label for="diabetes_pedigree">Diabetes Pedigree Function:</label>
+        <input type="number" id="diabetes_pedigree" name="diabetes_pedigree" step="0.01" required><br>
+
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" required><br>
+        
+        <button type="submit">Predict</button>
+    </form>
+
+    <div id="result" style="display:none;">
+        <h2>Prediction Result</h2>
+        <p><strong>Prediction:</strong> <span id="prediction"></span></p>
+        <p><strong>Probability:</strong> <span id="probability"></span></p>
+        <p><strong>Precautions:</strong> <span id="precautions"></span></p>
+        <p><strong>Medications:</strong> <span id="medications"></span></p>
+        <a id="downloadLink" href="/download_report" download>Download Report</a>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').onsubmit = async function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            if (result.error) {
+                alert(result.error);
+            } else {
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('prediction').innerText = result.prediction;
+                document.getElementById('probability').innerText = (result.probability * 100).toFixed(2) + '%';
+                document.getElementById('precautions').innerText = result.precautions;
+                document.getElementById('medications').innerText = result.medications;
+                document.getElementById('downloadLink').style.display = 'inline';
+            }
+        };
+    </script>
+</body>
+</html>
